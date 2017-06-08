@@ -5,7 +5,7 @@ username = 'root'
 password =  'redhat'
 database = 'mysql'
 #socket ='/tmp/mysql-master5520.sock'
-
+#Simple script to connect to mysql and execute the queries
 # Simple routine to run a query on a database and print the results:
 def Query( conn ) :
     print "Printing user and hosts from the box\n"
