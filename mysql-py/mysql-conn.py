@@ -4,7 +4,6 @@ import argparse
 import MySQLdb as mysql
 from warnings import filterwarnings
 
-
 def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--host", dest="host", help='Enter Hostname/ip to connect')
@@ -40,7 +39,6 @@ def index():
 	cursor.execute(sql)
 	print(cursor.fetchall())
 	cursor.close()
-
 
 def data_big():
 	cursor = get_mysql_conn(options.host, options.port_no).cursor(mysql.cursors.DictCursor)
