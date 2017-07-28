@@ -1,5 +1,4 @@
 import sys
-import logging
 import argparse
 import MySQLdb as mysql
 from warnings import filterwarnings
