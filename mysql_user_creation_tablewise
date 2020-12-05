@@ -1,0 +1,84 @@
+"""
+Usage python3 add_user.py <db_name> <user_name> <from_host>
+FILE : tbl.txt is hardcoded and should be present in local directory as the script
+tbl.txt should consists table names on new line
+"""
+import sys
+import random
+import string
+import MySQLdb
+tbl_file ='tbl.txt'
+
+
+""" Function for query execution locally , required password in .my.cnf """
+
+
+def mycon(sql):
+    try:
+        db_con = MySQLdb.connect(host="localhost",read_default_file="~/.my.cnf")
+    except:
+        print("Can't connect to MySQL")
+        mysql_state = "Cannot connect to MySQL on Scylla Repair Server"
+        return 0
+    cursor = db_con.cursor()
+    cursor.execute(sql)
+    db_con.commit()
+    return cursor.fetchall()
+    
+    
+""" Generate password with fixed lengh of 14 , characters only """
+def generate_pass(stringLength=14):
+    passw = string.ascii_lowercase
+    try:
+        print ("Generating password")
+        return ''.join(random.choice(passw) for i in range(stringLength))
+    except:
+        print ("Failed to generate password")
+        sys.exit()
+        
+        
+""" Function for initially user creation """
+def create_user(user1):
+    passwd = generate_pass()
+    from_host = sys.argv[3]
+    sql= ("create user '%s'@'%s' identified by '%s'") %(user1,from_host,passwd)
+    print (sql)
+    mycon(sql)
+    
+    
+""" Checking if User already exists """
+def check_user_exists(user1):
+    sql = "select count(user) from mysql.user where user='%s'" %(user1)
+    exec = (mycon(sql))
+    op = list(map(int,exec[0]))
+    if int(op[0]) >= 1:
+        print ("User already exists, granting access")
+        return True
+    else:
+        print ("User does not exists, creating new user")
+        create_user(user1)
+        
+        
+def grant_access(user1):
+    with open(tbl_file) as tbl:
+        lines = [line.rstrip() for line in tbl]
+    for i in lines:
+        sql = "grant select on %s.%s to %s" %(sys.argv[1],i,user1)
+        print (sql)
+        mycon(sql)
+        
+        
+def check_response():
+    cr = str(input("Are you sure, you want to create user, ENTER (y or n):"))
+    if cr == "y" or cr =="Y":
+        return True
+    else:
+        print ("Exiting script, NO or invalid input")
+        sys.exit()
+        
+        
+if __name__ == "__main__":
+    if check_response():
+        if not check_user_exists(sys.argv[2]):
+            print ("Creating User as user does not exist")
+        grant_access(sys.argv[2])
